@@ -1,17 +1,14 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.StringJoiner;
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Topological;
 
 public class WordNet {
     private Digraph g;
-    private final HashMap<String, Integer> wordToSynsetId = new HashMap<String, Integer>();
+    private final HashMap<String, ArrayList<Integer>> wordToSynsetIds = new HashMap<String, ArrayList<Integer>>();
+    private final SAP sap;
     private String[] synsetsById;
 
     public WordNet(String synsets, String hypernyms) {
@@ -19,28 +16,27 @@ public class WordNet {
         pairNullGuard(synsets, hypernyms);
         readSynsetExpressions(synsets);
         readSynsetHypernims(hypernyms);
+        sap = new SAP(g);
     }
 
     public Iterable<String> nouns() {
         // returns all WordNet nouns
-        return wordToSynsetId.keySet();
+        return wordToSynsetIds.keySet();
     }
 
     public boolean isNoun(String word) {
         // is the word a WordNet noun?
         nullGuard(word);
-        return wordToSynsetId.containsKey(word);
+        return wordToSynsetIds.containsKey(word);
     }
 
     public int distance(String nounA, String nounB) {
         // distance between nounA and nounB
         pairNullGuard(nounA, nounB);
         pairNonWordNetNounGuard(nounA, nounB);
-        int a = wordToSynsetId.get(nounA);
-        int b = wordToSynsetId.get(nounB);
-        SAP sap = new SAP(g);
+        ArrayList<Integer> a = wordToSynsetIds.get(nounA);
+        ArrayList<Integer> b = wordToSynsetIds.get(nounB);
         int dist = sap.length(a, b);
-
         return dist;
     }
 
@@ -48,57 +44,10 @@ public class WordNet {
         // shortest ancestral path
         pairNullGuard(nounA, nounB);
         pairNonWordNetNounGuard(nounA, nounB);
-
-        Integer a = wordToSynsetId.get(nounA);
-        Integer b = wordToSynsetId.get(nounB);
-        SAP sap = new SAP(g);
+        ArrayList<Integer> a = wordToSynsetIds.get(nounA);
+        ArrayList<Integer> b = wordToSynsetIds.get(nounB);
         Integer ancestor = sap.ancestor(a, b);
-
-        if (ancestor != -1) {
-            List<Integer> aToAncestorPath = bfs(a, ancestor);
-            List<Integer> bToAncestorPath = bfs(b, ancestor);
-            Collections.reverse(bToAncestorPath);
-
-            StringJoiner joiner = new StringJoiner("-");
-            joiner.add(nounA);
-            for (Integer node : aToAncestorPath) {
-                joiner.add(synsetsById[node]);
-            }
-            joiner.add(synsetsById[ancestor]);
-            for (Integer node : bToAncestorPath) {
-                joiner.add(synsetsById[node]);
-            }
-            joiner.add(nounB);
-            return joiner.toString();
-        } else {
-            return "";
-        }
-    }
-
-    private List<Integer> bfs(Integer source, Integer target) {
-        HashMap<Integer, Integer> cameFrom = new HashMap<>();
-        Queue<Integer> q = new Queue<>();
-        q.enqueue(source);
-        while (!q.isEmpty()) {
-            Integer node = q.dequeue();
-            if (node == target) {
-                break;
-            }
-            for (Integer parent : g.adj(node)) {
-                if (!cameFrom.containsKey(parent)) {
-                    cameFrom.put(parent, node);
-                    q.enqueue(parent);
-                }
-            }
-        }
-        Integer node = cameFrom.get(target);
-        ArrayList<Integer> path = new ArrayList<>();
-        while (node != source) {
-            path.add(node);
-            node = cameFrom.get(node);
-        }
-        Collections.reverse(path);
-        return path;
+        return synsetsById[ancestor];
     }
 
 
@@ -108,6 +57,7 @@ public class WordNet {
         synsetsIn.close();
 
         synsetsById = new String[synsetLines.length];
+        g = new Digraph(synsetLines.length);
         for (int i = 0; i < synsetLines.length; i++) {
             String line = synsetLines[i];
             String[] parts = line.split(",");
@@ -116,7 +66,10 @@ public class WordNet {
             synsetsById[i] = expressionsString;
             String[] expressions = expressionsString.split(" ");
             for (String expression : expressions) {
-                wordToSynsetId.put(expression, synsetId);
+                if (!wordToSynsetIds.containsKey(expression)) {
+                    wordToSynsetIds.put(expression, new ArrayList<Integer>());
+                }
+                wordToSynsetIds.get(expression).add(synsetId);
             }
         }
     }
@@ -126,7 +79,6 @@ public class WordNet {
         String[] hypernimlines = hyperIn.readAllLines();
         hyperIn.close();
 
-        g = new Digraph(hypernimlines.length);
         for (String line : hypernimlines)
         {
             String[] parts = line.split(",");
@@ -147,7 +99,7 @@ public class WordNet {
     }
 
     private void nonWordNetNounGuard(String noun) {
-        if (!wordToSynsetId.containsKey(noun)) {
+        if (!wordToSynsetIds.containsKey(noun)) {
             throw new IllegalArgumentException("Noun is not a WordNet noun!");
         }
     }
@@ -170,6 +122,18 @@ public class WordNet {
 
     public static void main(String[] args) {
         // do unit testing of this class
-        new WordNet("/home/zlv/Downloads/week1/synsets.txt", "/home/zlv/Downloads/week1/hypernyms.txt");
+        System.out.println("Program Started");
+        String basePath = "/home/zlv/Downloads/week1/";
+
+        //        WordNet wn1 = new WordNet(basePath + "synsets.txt", basePath + "hypernyms.txt");
+        //        System.out.println(wn1.sap("garbage_carter", "segno"));
+        //        System.out.println(String.valueOf(wn1.distance("broody_hen", "partnership")));
+
+        //            WordNet wn2 = new WordNet(basePath + "synsets15.txt", basePath + "hypernyms15Path.txt");
+        //        System.out.println(wn2.sap("a", "a"));
+
+        WordNet wn3 = new WordNet(basePath + "synsets3.txt", basePath + "hypernyms3InvalidCycle.txt");
+        WordNet wn4 = new WordNet(basePath + "synsets3.txt", basePath + "hypernyms6InvalidTwoRoots.txt");
+
     }
 }
