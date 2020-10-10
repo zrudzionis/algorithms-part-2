@@ -1,5 +1,4 @@
 import java.util.HashMap;
-import java.util.Iterator;
 
 import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
@@ -30,7 +29,7 @@ public class BaseballElimination {
         }
 
         teamVertexCount = teamCount - 1;
-        pairVertexCount = teamVertexCount*(int)Math.floor(1.0d*teamVertexCount/2);
+        pairVertexCount = teamVertexCount*(int) Math.floor(1.0d*teamVertexCount/2);
         vertexCount = 1 + pairVertexCount + teamVertexCount + 1;
         startVertexIndex = 0;
         firstTeamVertexIndex = pairVertexCount + 1;
@@ -102,26 +101,26 @@ public class BaseballElimination {
         teamNameGuard(team1);
         teamNameGuard(team2);
         int team1Index = getTeamIndex(team1);
-        int team2Index = getTeamIndex(team1);
+        int team2Index = getTeamIndex(team2);
         return remainingGames[team1Index][team2Index];
     }
 
     public Iterable<String> certificateOfElimination(String teamName) {
         // subset R of teams that eliminates given team; null if not eliminated
         teamNameGuard(teamName);
-        FlowNetwork flowNetwork = getFlowNetwork(teamName);
+        int questionedTeamIndex = teamNameToIndex.get(teamName);
+        FlowNetwork flowNetwork = getFlowNetwork(questionedTeamIndex);
         FordFulkerson fulkerson = new FordFulkerson(flowNetwork, startVertexIndex, endVertexIndex);
-        boolean isEliminated = areStartEdgesNotFullAndEndEdgesFull(flowNetwork.edges());
+        boolean isEliminated = isTeamEliminated(flowNetwork, questionedTeamIndex);
         if (isEliminated) {
-            return getCertificate(teamName, fulkerson);
+            return getCertificate(questionedTeamIndex, fulkerson);
         }
         return null;
     }
 
-    private Stack<String> getCertificate(String teamName, FordFulkerson fulkerson) {
+    private Stack<String> getCertificate(int questionedTeamIndex, FordFulkerson fulkerson) {
         Stack<String> teamNames = new Stack<String>();
-        int questionedTeamIndex = getTeamIndex(teamName);
-        for(int i = firstTeamVertexIndex; i < endVertexIndex; i++) {
+        for (int i = firstTeamVertexIndex; i < endVertexIndex; i++) {
             if (fulkerson.inCut(i)) {
                 int teamIndex = i - firstTeamVertexIndex;
                 if (teamIndex >= questionedTeamIndex) {
@@ -136,14 +135,14 @@ public class BaseballElimination {
 
     public boolean isEliminated(String teamName) {
         teamNameGuard(teamName);
-        FlowNetwork flowNetwork = getFlowNetwork(teamName);
+        int questionedTeamIndex = teamNameToIndex.get(teamName);
+        FlowNetwork flowNetwork = getFlowNetwork(questionedTeamIndex);
         new FordFulkerson(flowNetwork, startVertexIndex, endVertexIndex);
-        return areStartEdgesNotFullAndEndEdgesFull(flowNetwork.edges());
+        return isTeamEliminated(flowNetwork, questionedTeamIndex);
     }
 
-    private FlowNetwork getFlowNetwork(String questionedTeamName) {
-        int questionedTeamIndex = getTeamIndex(questionedTeamName);
-        Team questionedTeam = getTeam(questionedTeamName);
+    private FlowNetwork getFlowNetwork(int questionedTeamIndex) {
+        Team questionedTeam = teams[questionedTeamIndex];
         FlowNetwork flowNetwork = new FlowNetwork(vertexCount);
 
         int pairVertexIndex = 0;
@@ -173,38 +172,46 @@ public class BaseballElimination {
         return flowNetwork;
     }
 
-    private boolean areStartEdgesNotFullAndEndEdgesFull(Iterable<FlowEdge> edges) {
-        boolean areStartEdgesFull = true;
-        boolean areEndEdgesFull = true;
-
-        for (Iterator<FlowEdge> iterator = edges.iterator(); iterator.hasNext();) {
-            FlowEdge edge = iterator.next();
-            int vertexIndex = edge.to();
-            if (vertexIndex != startVertexIndex && vertexIndex != endVertexIndex) {
-                vertexIndex = edge.other(vertexIndex);
-            }
-
-            //            System.out.println(String.format("from: %s to: %s, %f/%f", toTeamIndex(edge.from()), toTeamIndex(edge.to()), edge.flow(), edge.capacity()));
-
-            if (vertexIndex == startVertexIndex) {
-                if (edge.flow() < edge.capacity()) {
-                    areStartEdgesFull = false;
-                }
-            }
-            if (vertexIndex == endVertexIndex) {
-                if (edge.flow() < edge.capacity()) {
-                    areEndEdgesFull = false;
-                }
+    private boolean isTeamEliminated(FlowNetwork flowNetwork, int questionedTeamIndex) {
+        for (FlowEdge endEdge : flowNetwork.adj(endVertexIndex)) {
+            boolean isEndEdgeFull = endEdge.flow() == endEdge.capacity();
+            //            boolean areStartEdgesFull = areAllStartEdgesFull(flowNetwork, endEdge, endVertexIndex, 0);
+            boolean areStartEdgesFull = areAllStartEdgesFull(flowNetwork, endEdge, endVertexIndex);
+            if (isEndEdgeFull && !areStartEdgesFull) {
+                return true;
             }
         }
-
+        //            System.out.println(String.format("from: %s to: %s, %f/%f", toTeamIndex(edge.from()), toTeamIndex(edge.to()), edge.flow(), edge.capacity()));
         //        System.out.println(String.format("%b %b", areStartEdgesFull, areEndEdgesFull));
 
-        return !areStartEdgesFull && areEndEdgesFull;
+        return false;
+    }
+
+
+    private boolean areAllStartEdgesFull(FlowNetwork flowNetwork, FlowEdge startEdge, int visitedVertexIndex) {
+        //    private boolean areAllStartEdgesFull(FlowNetwork flowNetwork, FlowEdge startEdge, int visitedVertexIndex, int depth) {
+        //        String prefix = "  ".repeat(depth);
+        //        System.out.println(String.format("%s >>> from: %s to: %s, %f/%f", prefix, toTeamIndex(startEdge.from()), toTeamIndex(startEdge.to()), startEdge.flow(), startEdge.capacity()));
+        if (startEdge.from() == startVertexIndex || startEdge.to() == startVertexIndex) {
+            return startEdge.flow() == startEdge.capacity();
+        }
+        //        if (depth == 6) {
+        //            return false;
+        //        }
+        boolean allAreFull = true;
+        int nextVertexIndex = startEdge.other(visitedVertexIndex);
+        for (FlowEdge edge : flowNetwork.adj(nextVertexIndex)) {
+            if (edge.from() >= visitedVertexIndex || edge.to() >= visitedVertexIndex) {
+                continue;
+            }
+            allAreFull = allAreFull && areAllStartEdgesFull(flowNetwork, edge, nextVertexIndex);
+            //            allAreFull = allAreFull && areAllStartEdgesFull(flowNetwork, edge, nextVertexIndex, depth + 1);
+        }
+        return allAreFull;
     }
 
     private String toTeamIndex(int index) {
-        int questionedTeamIndex = 3;
+        int questionedTeamIndex = 1;
         if (index == startVertexIndex) {
             return "start";
         }
@@ -272,9 +279,10 @@ public class BaseballElimination {
             throw new IllegalArgumentException("Please provide input filename!");
         }
         BaseballElimination division = new BaseballElimination(args[0]);
+        //        System.out.println(String.format("Against: %d", division.against("Atlanta", "Philadelphia")));
         for (String team : division.teams()) {
             // TODO
-            //            if (team.compareTo("Montreal") != 0) {
+            //            if (team.compareTo("Philadelphia") != 0) {
             //                continue;
             //            }
 
