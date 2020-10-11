@@ -14,17 +14,16 @@ public class BaseballElimination {
     private final int startVertexIndex;
     private final int firstTeamVertexIndex;
     private final int endVertexIndex;
+    private final HashMap<String, Integer> teamNameToIndex = new HashMap<String, Integer>();
 
     private int teamCount;
     private Team[] teams;
-    private HashMap<String, Integer> teamNameToIndex = new HashMap<String, Integer>();
     private int[][] remainingGames;
 
     public BaseballElimination(String filename) {
         readTeamsFromFile(filename);
         for (int i = 0; i < teams.length; i++) {
             Team team = teams[i];
-            //            System.out.println(String.format("%d = %s", i, team.name));
             teamNameToIndex.put(team.name, i);
         }
 
@@ -34,7 +33,6 @@ public class BaseballElimination {
         startVertexIndex = 0;
         firstTeamVertexIndex = pairVertexCount + 1;
         endVertexIndex = vertexCount - 1;
-        //        System.out.println(String.format("pairVertexCount: %d", pairVertexCount));
     }
 
     private void readTeamsFromFile(String filename) {
@@ -119,14 +117,19 @@ public class BaseballElimination {
     }
 
     private Stack<String> getCertificate(int questionedTeamIndex, FordFulkerson fulkerson) {
+        Team questionedTeam = teams[questionedTeamIndex];
+        int questionedTeamMaxWins = questionedTeam.wins + questionedTeam.remainingGames;
         Stack<String> teamNames = new Stack<String>();
         for (int i = firstTeamVertexIndex; i < endVertexIndex; i++) {
+            int teamIndex = i - firstTeamVertexIndex;
+            if (teamIndex >= questionedTeamIndex) {
+                teamIndex += 1;
+            }
+            Team team = teams[teamIndex];
+
             if (fulkerson.inCut(i)) {
-                int teamIndex = i - firstTeamVertexIndex;
-                if (teamIndex >= questionedTeamIndex) {
-                    teamIndex += 1;
-                }
-                Team team = teams[teamIndex];
+                teamNames.push(team.name);
+            } else if (team.wins > questionedTeamMaxWins) {
                 teamNames.push(team.name);
             }
         }
@@ -173,31 +176,30 @@ public class BaseballElimination {
     }
 
     private boolean isTeamEliminated(FlowNetwork flowNetwork, int questionedTeamIndex) {
+        Team questionedTeam = teams[questionedTeamIndex];
+        int questionedTeamMaxWins = questionedTeam.wins + questionedTeam.remainingGames;
+        for (int i = 0; i < teamCount; i++) {
+            Team team = teams[i];
+            if (team.wins > questionedTeamMaxWins) {
+                return true;
+            }
+        }
+
         for (FlowEdge endEdge : flowNetwork.adj(endVertexIndex)) {
             boolean isEndEdgeFull = endEdge.flow() == endEdge.capacity();
-            //            boolean areStartEdgesFull = areAllStartEdgesFull(flowNetwork, endEdge, endVertexIndex, 0);
             boolean areStartEdgesFull = areAllStartEdgesFull(flowNetwork, endEdge, endVertexIndex);
             if (isEndEdgeFull && !areStartEdgesFull) {
                 return true;
             }
         }
-        //            System.out.println(String.format("from: %s to: %s, %f/%f", toTeamIndex(edge.from()), toTeamIndex(edge.to()), edge.flow(), edge.capacity()));
-        //        System.out.println(String.format("%b %b", areStartEdgesFull, areEndEdgesFull));
-
         return false;
     }
 
 
     private boolean areAllStartEdgesFull(FlowNetwork flowNetwork, FlowEdge startEdge, int visitedVertexIndex) {
-        //    private boolean areAllStartEdgesFull(FlowNetwork flowNetwork, FlowEdge startEdge, int visitedVertexIndex, int depth) {
-        //        String prefix = "  ".repeat(depth);
-        //        System.out.println(String.format("%s >>> from: %s to: %s, %f/%f", prefix, toTeamIndex(startEdge.from()), toTeamIndex(startEdge.to()), startEdge.flow(), startEdge.capacity()));
         if (startEdge.from() == startVertexIndex || startEdge.to() == startVertexIndex) {
             return startEdge.flow() == startEdge.capacity();
         }
-        //        if (depth == 6) {
-        //            return false;
-        //        }
         boolean allAreFull = true;
         int nextVertexIndex = startEdge.other(visitedVertexIndex);
         for (FlowEdge edge : flowNetwork.adj(nextVertexIndex)) {
@@ -205,47 +207,8 @@ public class BaseballElimination {
                 continue;
             }
             allAreFull = allAreFull && areAllStartEdgesFull(flowNetwork, edge, nextVertexIndex);
-            //            allAreFull = allAreFull && areAllStartEdgesFull(flowNetwork, edge, nextVertexIndex, depth + 1);
         }
         return allAreFull;
-    }
-
-    private String toTeamIndex(int index) {
-        int questionedTeamIndex = 1;
-        if (index == startVertexIndex) {
-            return "start";
-        }
-        if (index == endVertexIndex) {
-            return "end";
-        }
-        if (index < firstTeamVertexIndex) {
-            int pairVertexIndex = 0;
-            for (int i = 0; i < teamVertexCount; i++) {
-                int iTeamIndex = i;
-                if (i >= questionedTeamIndex) {
-                    iTeamIndex += 1;
-                }
-                for (int j = i + 1; j < teamVertexCount; j++) {
-                    int jTeamIndex = j;
-                    if (j >= questionedTeamIndex) {
-                        jTeamIndex += 1;
-                    }
-                    pairVertexIndex += 1;
-                    if (pairVertexIndex == index) {
-                        return String.format("(%s vs %s)", teams[iTeamIndex].name, teams[jTeamIndex].name);
-                    }
-                }
-            }
-            return "Pair not found";
-
-        } else {
-            int idx = index - firstTeamVertexIndex;
-            if (idx >= questionedTeamIndex) {
-                idx += 1;
-            }
-            return teams[idx].name;
-        }
-
     }
 
     private void teamNameGuard(String teamName) {
@@ -279,13 +242,7 @@ public class BaseballElimination {
             throw new IllegalArgumentException("Please provide input filename!");
         }
         BaseballElimination division = new BaseballElimination(args[0]);
-        //        System.out.println(String.format("Against: %d", division.against("Atlanta", "Philadelphia")));
         for (String team : division.teams()) {
-            // TODO
-            //            if (team.compareTo("Philadelphia") != 0) {
-            //                continue;
-            //            }
-
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
                 for (String t : division.certificateOfElimination(team)) {
