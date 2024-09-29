@@ -1,2 +1,5 @@
 # zip files used for uploading solution
 *.zip
+
+# jar files used for libs
+*.jar
