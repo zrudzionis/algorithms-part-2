@@ -3,3 +3,7 @@
 
 # jar files used for libs
 *.jar
+
+.DS_Store
+
+.vscode
