@@ -15,10 +15,7 @@ Challenging REs. Construct a regular expression for each of the following langua
 2. `1(01)*0?`. Here `?` is 0 or 1 symbols.
 3. Not possible since it requires memory. We need to keep track of 0s and 1s count.
 4. `(100+)|(00+1?0*)|(010+)`.
-5. Not possible since it requires memory. To determine if a binary number is a multiple of 3, we can use a remainder-based rule that doesn't require converting the binary number to decimal. Track alternating sums: Traverse the binary number from the least significant bit (rightmost) to the most significant bit (leftmost). Keep two sums:
-   * Sum of bits at odd positions.
-   * Sum of bits at even positions.
-Subtract the two sums: Once you've traversed the binary number, subtract the sum of the even-position bits from the sum of the odd-position bits. If the result is divisible by 3, then the binary number is a multiple of 3. This requires memory.
+5. TODO
 6. `(1$)|(0+10*)*|(10+)*`.
 7. Not possible since it requires memory. We need to keep track of 0s and 1s count.
 8. Not possible since it requires memory. We need to keep track of 01s and 10s count.
@@ -26,8 +23,18 @@ Subtract the two sums: Once you've traversed the binary number, subtract the sum
 # Question #2.
 Exponential-size DFA.
 Design a regular expressions of length n such that any DFA that recognizes the same language has an exponential number of states.
+
 ## Answer
-TODO
+Regex: *(0|1){a}*
+
+ * *n* - regex length
+ * *a* - number
+ * *b* - number of bits in *a*
+ * D - number of states in DFA
+
+For *a* we have D=2*(2^b) states.
+For added bit to *a* we have D=2*(2^(b + 1)) states and *n* can grow only by one digit so the order of growth is exponential.
+
 
 # Question #3.
 Extensions to NFA. Add to [NFA.java](http://algs4.cs.princeton.edu/54regexp/NFA.java.html) the ability to handle multiway or, wildcard, and the + closure operator.
