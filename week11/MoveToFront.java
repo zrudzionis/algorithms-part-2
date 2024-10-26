@@ -5,23 +5,22 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
   private static final int R = 256;
-  private static DoublyLinkedList<Character> list = new DoublyLinkedList<Character>();
 
   public static void encode() {
-    list = new DoublyLinkedList<>();
+    DoublyLinkedList<Character> list = new DoublyLinkedList<>();
 
     for (int i = 0; i < R; i++) {
-      Character ch = (char) i;
+      char ch = (char) i;
       list.add(ch);
     }
 
     while (!BinaryStdIn.isEmpty()) {
-      Character ch = BinaryStdIn.readChar();
+      char ch = BinaryStdIn.readChar();
       ListIterator<Node<Character>> iterator = list.iterator();
       int index = 0;
       while (iterator.hasNext()) {
         Node<Character> current = iterator.next();
-        if (current.item.equals(ch)) {
+        if (current.getItem().equals(ch)) {
           list.remove(current);
           list.prepend(current);
           BinaryStdOut.write(index, 8);
@@ -34,10 +33,10 @@ public class MoveToFront {
   }
 
   public static void decode() {
-    list = new DoublyLinkedList<>();
+    DoublyLinkedList<Character> list = new DoublyLinkedList<>();
 
     for (int i = 0; i < R; i++) {
-      Character ch = (char) i;
+      char ch = (char) i;
       list.add(ch);
     }
 
@@ -51,7 +50,7 @@ public class MoveToFront {
         if (i == index) {
           list.remove(current);
           list.prepend(current);
-          BinaryStdOut.write(current.item);
+          BinaryStdOut.write(current.getItem());
           break;
         }
         i += 1;

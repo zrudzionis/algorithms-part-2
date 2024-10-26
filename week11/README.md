@@ -1,7 +1,7 @@
 
 ### Compile
 ```
-javac-algs4 Node.java DoublyLinkedList.java MoveToFront.java CircularSuffixArray.java
+javac-algs4 Node.java DoublyLinkedList.java MoveToFront.java CircularSuffixArray.java BurrowsWheeler.java
 ```
 
 ### Run MoveToFront
@@ -19,6 +19,17 @@ java-algs4 MoveToFront - < abra.txt | java-algs4 MoveToFront +
 ### Run CircularSuffixArray
 ```
 java-algs4 CircularSuffixArray
+```
+
+### Run BurrowsWheeler
+Transform:
+```
+java-algs4 BurrowsWheeler - < abra.txt | java-algs4 edu.princeton.cs.algs4.HexDump 16
+```
+
+Inverse transform:
+```
+java-algs4 BurrowsWheeler - < abra.txt | java-algs4 BurrowsWheeler +
 ```
 
 ### Zip solution

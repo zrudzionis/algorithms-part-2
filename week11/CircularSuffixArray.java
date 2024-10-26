@@ -3,9 +3,9 @@ import java.util.Arrays;
 import edu.princeton.cs.algs4.StdOut;
 
 public class CircularSuffixArray {
-  private String s;
-  private Node[] nodes;
-  private int n;
+  private final String s;
+  private final Node[] nodes;
+  private final int n;
 
   private class Node implements Comparable<Node> {
     public int offset;
@@ -54,6 +54,7 @@ public class CircularSuffixArray {
     }
     return nodes[i].offset;
   }
+
   // unit testing (required)
   public static void main(String[] args) {
     String s = "ABRACADABRA!";

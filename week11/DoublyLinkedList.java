@@ -32,14 +32,14 @@ import edu.princeton.cs.algs4.StdRandom;
 
 public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
   private int n; // number of elements on list
-  private Node<Item> pre; // sentinel before first item
-  private Node<Item> post; // sentinel after last item
+  private final Node<Item> pre; // sentinel before first item
+  private final Node<Item> post; // sentinel after last item
 
   public DoublyLinkedList() {
     pre = new Node<Item>();
     post = new Node<Item>();
-    pre.next = post;
-    post.prev = pre;
+    pre.setNext(post);
+    post.setPrev(pre);
   }
 
   public boolean isEmpty() {
@@ -51,50 +51,50 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
   }
 
   public void insertAfter(Node<Item> node, Node<Item> nodeToInsert) {
-    Node<Item> nodeAfter = node.next;
-    nodeToInsert.prev = node;
-    nodeToInsert.next = nodeAfter;
-    node.next = nodeToInsert;
-    nodeAfter.prev = nodeToInsert;
+    Node<Item> nodeAfter = node.getNext();
+    nodeToInsert.setPrev(node);
+    nodeToInsert.setNext(nodeAfter);
+    node.setNext(nodeToInsert);
+    nodeAfter.setPrev(nodeToInsert);
     n++;
   }
 
   public void insertBefore(Node<Item> node, Node<Item> nodeToInsert) {
-    Node<Item> nodeBefore = node.prev;
-    nodeToInsert.prev = nodeBefore;
-    nodeToInsert.next = node;
-    node.prev = nodeToInsert;
-    nodeBefore.next = nodeToInsert;
+    Node<Item> nodeBefore = node.getPrev();
+    nodeToInsert.setPrev(nodeBefore);
+    nodeToInsert.setNext(node);
+    node.setPrev(nodeToInsert);
+    nodeBefore.setNext(nodeToInsert);
     n++;
   }
 
   public void remove(Node<Item> node) {
-    Node<Item> before = node.prev;
-    Node<Item> after = node.next;
-    before.next = after;
-    after.prev = before;
-    node.prev = null;
-    node.next = null;
+    Node<Item> before = node.getPrev();
+    Node<Item> after = node.getNext();
+    before.setNext(after);
+    after.setPrev(before);
+    node.setPrev(null);
+    node.setNext(null);
     n--;
   }
 
   public void prepend(Node<Item> node) {
-    Node<Item> tmp = pre.next;
-    pre.next = node;
-    node.prev = pre;
-    node.next = tmp;
-    tmp.prev = node;
+    Node<Item> tmp = pre.getNext();
+    pre.setNext(node);
+    node.setPrev(pre);
+    node.setNext(tmp);
+    tmp.setPrev(node);
     n++;
   }
 
   public void add(Item item) {
-    Node<Item> last = post.prev;
+    Node<Item> last = post.getPrev();
     Node<Item> x = new Node<Item>();
-    x.item = item;
-    x.next = post;
-    x.prev = last;
-    post.prev = x;
-    last.next = x;
+    x.setItem(item);
+    x.setNext(post);
+    x.setPrev(last);
+    post.setPrev(x);
+    last.setNext(x);
     n++;
   }
 
@@ -104,7 +104,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
 
   // assumes no calls to DoublyLinkedList.add() during iteration
   private class DoublyLinkedListIterator implements ListIterator<Node<Item>> {
-    private Node<Item> current = pre.next; // the node that is returned by next()
+    private Node<Item> current = pre.getNext(); // the node that is returned by next()
     private Node<Item> lastAccessed = null; // the last node to be returned by prev() or next()
                                       // reset to null upon intervening remove() or add()
     private int index = 0;
@@ -130,7 +130,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
         throw new NoSuchElementException();
       lastAccessed = current;
       Node<Item> returnValue = current;
-      current = current.next;
+      current = current.getNext();
       index++;
       return returnValue;
     }
@@ -138,7 +138,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     public Node<Item> previous() {
       if (!hasPrevious())
         throw new NoSuchElementException();
-      current = current.prev;
+      current = current.getPrev();
       index--;
       lastAccessed = current;
       return current;
@@ -151,12 +151,12 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     public void set(Node<Item> node) {
       if (lastAccessed == null)
         throw new IllegalStateException();
-      Node<Item> prev = lastAccessed.prev;
-      Node<Item> next = lastAccessed.next;
-      node.prev = prev;
-      node.next = next;
-      lastAccessed.next = null;
-      lastAccessed.prev = null;
+      Node<Item> prev = lastAccessed.getPrev();
+      Node<Item> next = lastAccessed.getNext();
+      node.setPrev(prev);
+      node.setNext(next);
+      lastAccessed.setNext(null);
+      lastAccessed.setPrev(null);
       lastAccessed = node;
     }
 
@@ -166,10 +166,10 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     public void remove() {
       if (lastAccessed == null)
         throw new IllegalStateException();
-      Node<Item> x = lastAccessed.prev;
-      Node<Item> y = lastAccessed.next;
-      x.next = y;
-      y.prev = x;
+      Node<Item> x = lastAccessed.getPrev();
+      Node<Item> y = lastAccessed.getNext();
+      x.setNext(y);
+      y.setPrev(x);
       n--;
       if (current == lastAccessed)
         current = y;
@@ -180,12 +180,12 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
 
     // add element to list
     public void add(Node<Item> y) {
-      Node<Item> x = current.prev;
+      Node<Item> x = current.getPrev();
       Node<Item> z = current;
-      x.next = y;
-      y.next = z;
-      z.prev = y;
-      y.prev = x;
+      x.setNext(y);
+      y.setNext(z);
+      z.setPrev(y);
+      y.setPrev(x);
       n++;
       index++;
       lastAccessed = null;
@@ -196,7 +196,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
   public String toString() {
     StringBuilder s = new StringBuilder();
     for (Node<Item> node : this)
-      s.append(node.item + " ");
+      s.append(node.getItem() + " ");
     return s.toString();
   }
 
@@ -218,7 +218,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("add 1 to each element via next() and set()");
     while (iterator.hasNext()) {
       Node<Integer> x = iterator.next();
-      Node<Integer> y = new Node<Integer>(x.item + 1);
+      Node<Integer> y = new Node<Integer>(x.getItem() + 1);
       iterator.set(y);
     }
     StdOut.println(list);
@@ -228,7 +228,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("multiply each element by 3 via previous() and set()");
     while (iterator.hasPrevious()) {
       Node<Integer> x = iterator.previous();
-      iterator.set(new Node<Integer>(x.item * 3));
+      iterator.set(new Node<Integer>(x.getItem() * 3));
     }
     StdOut.println(list);
     StdOut.println();
@@ -237,7 +237,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("remove elements that are a multiple of 4 via next() and remove()");
     while (iterator.hasNext()) {
       Node<Integer> x = iterator.next();
-      if (x.item % 4 == 0)
+      if (x.getItem() % 4 == 0)
         iterator.remove();
     }
     StdOut.println(list);
@@ -247,7 +247,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("remove elements that are even via previous() and remove()");
     while (iterator.hasPrevious()) {
       Node<Integer> x = iterator.previous();
-      if (x.item % 2 == 0)
+      if (x.getItem() % 2 == 0)
         iterator.remove();
     }
     StdOut.println(list);
@@ -257,7 +257,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("add elements via next() and add()");
     while (iterator.hasNext()) {
       Node<Integer> x = iterator.next();
-      iterator.add(new Node<Integer>(x.item + 1));
+      iterator.add(new Node<Integer>(x.getItem() + 1));
     }
     StdOut.println(list);
     StdOut.println();
@@ -266,7 +266,7 @@ public class DoublyLinkedList<Item> implements Iterable<Node<Item>> {
     StdOut.println("add elements via previous() and add()");
     while (iterator.hasPrevious()) {
       Node<Integer> x = iterator.previous();
-      iterator.add(new Node<Integer>(x.item * 10));
+      iterator.add(new Node<Integer>(x.getItem() * 10));
       iterator.previous();
     }
     StdOut.println(list);
