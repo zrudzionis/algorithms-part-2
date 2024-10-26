@@ -1,7 +1,7 @@
 
 ### Compile
 ```
-javac-algs4 Node.java DoublyLinkedList.java MoveToFront.java CircularSuffixArray.java BurrowsWheeler.java
+javac-algs4 MoveToFront.java CircularSuffixArray.java BurrowsWheeler.java
 ```
 
 ### Run MoveToFront
@@ -34,5 +34,5 @@ java-algs4 BurrowsWheeler - < abra.txt | java-algs4 BurrowsWheeler +
 
 ### Zip solution
 ```
-zip burrows.zip Node.java DoublyLinkedList.java MoveToFront.java CircularSuffixArray.java BurrowsWheeler.java
+zip burrows.zip MoveToFront.java CircularSuffixArray.java BurrowsWheeler.java
 ```

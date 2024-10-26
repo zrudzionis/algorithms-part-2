@@ -1,4 +1,5 @@
-import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
@@ -7,7 +8,7 @@ public class MoveToFront {
   private static final int R = 256;
 
   public static void encode() {
-    DoublyLinkedList<Character> list = new DoublyLinkedList<>();
+    LinkedList<Character> list = new LinkedList<>();
 
     for (int i = 0; i < R; i++) {
       char ch = (char) i;
@@ -16,24 +17,24 @@ public class MoveToFront {
 
     while (!BinaryStdIn.isEmpty()) {
       char ch = BinaryStdIn.readChar();
-      ListIterator<Node<Character>> iterator = list.iterator();
-      int index = 0;
+      Iterator<Character> iterator = list.iterator();
+      int i = 0;
       while (iterator.hasNext()) {
-        Node<Character> current = iterator.next();
-        if (current.getItem().equals(ch)) {
-          list.remove(current);
-          list.prepend(current);
-          BinaryStdOut.write(index, 8);
+        char current = iterator.next();
+        if (current == ch) {
+          list.remove(i);
+          list.addFirst(current);
+          BinaryStdOut.write(i, 8);
           break;
         }
-        index += 1;
+        i += 1;
       }
     }
     BinaryStdOut.flush();
   }
 
   public static void decode() {
-    DoublyLinkedList<Character> list = new DoublyLinkedList<>();
+    LinkedList<Character> list = new LinkedList<>();
 
     for (int i = 0; i < R; i++) {
       char ch = (char) i;
@@ -43,14 +44,14 @@ public class MoveToFront {
     while (!BinaryStdIn.isEmpty()) {
       int index = BinaryStdIn.readInt(8);
 
-      ListIterator<Node<Character>> iterator = list.iterator();
+      Iterator<Character> iterator = list.iterator();
       int i = 0;
       while (iterator.hasNext()) {
-        Node<Character> current = iterator.next();
+        char current = iterator.next();
         if (i == index) {
-          list.remove(current);
-          list.prepend(current);
-          BinaryStdOut.write(current.getItem());
+          list.remove(i);
+          list.addFirst(current);
+          BinaryStdOut.write(current);
           break;
         }
         i += 1;
