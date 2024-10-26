@@ -81,3 +81,16 @@ private static Node readTrie() {
   return new Node('\0', 0, readTrie(), readTrie(), readTrie());
 }
 ```
+
+# Question #2.
+* Identify an optimal uniquely-decodable code that is neither prefix free nor suffix tree.
+* Identify two optimal prefix-free codes for the same input that have a different distribution of codeword lengths.
+
+## Answer
+TODO
+
+# Question #3.
+Move-to-front coding. Design an algorithm to implement move-to-front encoding so that each operation takes logarithmic time in the worst case. That is, maintain alphabet of symbols in a list. A symbol is encoded as the number of symbols that precede it in the list. After encoding a symbol, move it to the front of the list.
+
+## Answer
+TODO
