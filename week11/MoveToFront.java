@@ -1,6 +1,3 @@
-import java.util.Iterator;
-import java.util.LinkedList;
-
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 
@@ -8,56 +5,57 @@ public class MoveToFront {
   private static final int R = 256;
 
   public static void encode() {
-    LinkedList<Character> list = new LinkedList<>();
-
+    char[] chars = new char[R];
     for (int i = 0; i < R; i++) {
-      char ch = (char) i;
-      list.add(ch);
+      chars[i] = (char) i;
     }
 
     while (!BinaryStdIn.isEmpty()) {
       char ch = BinaryStdIn.readChar();
-      Iterator<Character> iterator = list.iterator();
-      int i = 0;
-      while (iterator.hasNext()) {
-        char current = iterator.next();
-        if (current == ch) {
-          list.remove(i);
-          list.addFirst(current);
-          BinaryStdOut.write(i, 8);
-          break;
-        }
-        i += 1;
-      }
+      int index = moveToFront(chars, ch);
+      BinaryStdOut.write(index, 8);
     }
     BinaryStdOut.flush();
   }
 
   public static void decode() {
-    LinkedList<Character> list = new LinkedList<>();
-
+    char[] chars = new char[R];
     for (int i = 0; i < R; i++) {
-      char ch = (char) i;
-      list.add(ch);
+      chars[i] = (char) i;
     }
 
     while (!BinaryStdIn.isEmpty()) {
       int index = BinaryStdIn.readInt(8);
-
-      Iterator<Character> iterator = list.iterator();
-      int i = 0;
-      while (iterator.hasNext()) {
-        char current = iterator.next();
-        if (i == index) {
-          list.remove(i);
-          list.addFirst(current);
-          BinaryStdOut.write(current);
-          break;
-        }
-        i += 1;
-      }
+      char ch = chars[index];
+      moveToFront(chars, index);
+      BinaryStdOut.write(ch);
     }
     BinaryStdOut.flush();
+  }
+
+
+  private static int moveToFront(char[] chars, char ch) {
+    char next = chars[0];
+    int index = 0;
+    for (int i = 0; i < chars.length - 1; i++) {
+      if (next == ch) {
+        break;
+      }
+      char tmp = chars[i + 1];
+      chars[i + 1] = next;
+      next = tmp;
+      index += 1;
+    }
+    chars[0] = ch;
+    return index;
+  }
+
+  private static void moveToFront(char[] chars, int index) {
+    char ch = chars[index];
+    for (int i = index; i > 0; i--) {
+      chars[i] = chars[i - 1];
+    }
+    chars[0] = ch;
   }
 
   // if args[0] is "-", apply move-to-front encoding
