@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.SET;
+import edu.princeton.cs.algs4.In;
 
 public class BoggleSolver
 {
@@ -95,5 +96,17 @@ public class BoggleSolver
             return 0;
         }
         return getWordScore(word);
+    }
+
+    public static void main(String[] args) {
+        In in = new In(args[0]);
+        String[] dictionary = in.readAllStrings();
+        int runCount = Integer.parseInt(args[1]);
+        BoggleSolver solver = new BoggleSolver(dictionary);
+
+        for (int i = 0; i < 5000; i++) {
+            BoggleBoard board = new BoggleBoard();
+            solver.getAllValidWords(board);
+        }
     }
 }
