@@ -122,18 +122,5 @@ public class WordNet {
 
     public static void main(String[] args) {
         // do unit testing of this class
-        System.out.println("Program Started");
-        String basePath = "/home/zlv/Downloads/week1/";
-
-        //        WordNet wn1 = new WordNet(basePath + "synsets.txt", basePath + "hypernyms.txt");
-        //        System.out.println(wn1.sap("garbage_carter", "segno"));
-        //        System.out.println(String.valueOf(wn1.distance("broody_hen", "partnership")));
-
-        //            WordNet wn2 = new WordNet(basePath + "synsets15.txt", basePath + "hypernyms15Path.txt");
-        //        System.out.println(wn2.sap("a", "a"));
-
-        WordNet wn3 = new WordNet(basePath + "synsets3.txt", basePath + "hypernyms3InvalidCycle.txt");
-        WordNet wn4 = new WordNet(basePath + "synsets3.txt", basePath + "hypernyms6InvalidTwoRoots.txt");
-
     }
 }
